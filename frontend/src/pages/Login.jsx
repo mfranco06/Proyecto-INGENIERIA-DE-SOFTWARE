@@ -67,7 +67,7 @@ export default function Login() {
             style={{ width: '100%', justifyContent: 'center', padding: '10px', fontSize: '14px' }}
             disabled={loading}
           >
-            {loading ? '⏳ Verificando...' : '🔐 Iniciar sesión'}
+            {loading ? '⏳ Verificando... ' : '🔐 Iniciar sesión'}
           </button>
         </form>
 
