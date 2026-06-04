@@ -18,6 +18,8 @@ export default function Dashboard() {
   if (loading) return <div className="loading"><div className="spinner" /> Cargando datos...</div>
   if (!data) return <div className="loading">Error al cargar el dashboard</div>
 
+  const alertasBusesHigh = data.alertasBuses.filter(b => b.ocupacion_pct > 80)
+  const alertasBusesLow = data.alertasBuses.filter(b => b.ocupacion_pct <= 80)
   const totalAlertas = data.alertasEstaciones.length + data.alertasBuses.length
 
   return (
@@ -114,8 +116,14 @@ export default function Dashboard() {
               <br /><span>{a.pasajeros_actuales} / {a.capacidad} pasajeros · {a.ocupacion_pct}% ocupación (límite: 50%)</span>
             </div>
           ))}
-          {data.alertasBuses.map((b, i) => (
-            <div className="alert-item warning" key={`b${i}`}>
+          {alertasBusesHigh.map((b, i) => (
+            <div className="alert-item danger" key={`bh${i}`}>
+              <strong>⚠️ Bus con alta ocupación:</strong> {b.placa}
+              <br /><span>{b.pasajeros_actuales} / {b.capacidad_maxima} pasajeros · {b.ocupacion_pct}% ocupación (límite: 80%)</span>
+            </div>
+          ))}
+          {alertasBusesLow.map((b, i) => (
+            <div className="alert-item warning" key={`bl${i}`}>
               <strong>🚌 Bus con baja ocupación:</strong> {b.placa}
               <br /><span>{b.pasajeros_actuales} / {b.capacidad_maxima} pasajeros · {b.ocupacion_pct}% — permanecerá 5 min extra por estación</span>
             </div>

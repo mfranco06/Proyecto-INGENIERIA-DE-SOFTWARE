@@ -54,12 +54,20 @@ app.get('/api/dashboard', authMiddleware, (req, res) => {
   `).all();
 
   // Alertas: buses con <25% ocupación
-  const alertasBuses = db.prepare(`
+  const alertasBusesLow = db.prepare(`
     SELECT placa, capacidad_maxima, pasajeros_actuales,
            ROUND(pasajeros_actuales * 100.0 / capacidad_maxima, 1) as ocupacion_pct
     FROM bus WHERE pasajeros_actuales * 1.0 / capacidad_maxima < 0.25 AND estado = 'activo'
   `).all();
 
+  // Alertas: buses con >80% ocupación
+  const alertasBusesHigh = db.prepare(`
+    SELECT placa, capacidad_maxima, pasajeros_actuales,
+           ROUND(pasajeros_actuales * 100.0 / capacidad_maxima, 1) as ocupacion_pct
+    FROM bus WHERE pasajeros_actuales * 1.0 / capacidad_maxima > 0.80 AND estado = 'activo'
+  `).all();
+
+  const alertasBuses = [...alertasBusesLow, ...alertasBusesHigh];
   const totalAlertas = alertasEstaciones.length + alertasBuses.length;
 
   // Datos para gráfico de estaciones
@@ -123,16 +131,16 @@ app.post('/api/buses', authMiddleware, (req, res) => {
 });
 
 app.put('/api/buses/:id', authMiddleware, (req, res) => {
-  const { placa, capacidad_maxima, estado, id_linea, id_parqueo, id_piloto } = req.body;
+  const { placa, capacidad_maxima, pasajeros_actuales, estado, id_linea, id_parqueo, id_piloto } = req.body;
   const db = getDb();
   if (id_piloto) {
     const pilotoOcupado = db.prepare('SELECT id_bus FROM bus WHERE id_piloto = ? AND id_bus != ?').get(id_piloto, req.params.id);
     if (pilotoOcupado) return res.status(400).json({ error: 'El piloto ya tiene un bus asignado' });
   }
   db.prepare(`
-    UPDATE bus SET placa=?, capacidad_maxima=?, estado=?, id_linea=?, id_parqueo=?, id_piloto=?
+    UPDATE bus SET placa=?, capacidad_maxima=?, pasajeros_actuales=?, estado=?, id_linea=?, id_parqueo=?, id_piloto=?
     WHERE id_bus=?
-  `).run(placa, capacidad_maxima, estado, id_linea || null, id_parqueo, id_piloto || null, req.params.id);
+  `).run(placa, capacidad_maxima, pasajeros_actuales || 0, estado, id_linea || null, id_parqueo, id_piloto || null, req.params.id);
   res.json({ message: 'Bus actualizado exitosamente' });
 });
 
