@@ -71,10 +71,7 @@ export default function Login() {
           </button>
         </form>
 
-        <div className="login-hint">
-          <strong>Usuarios de prueba:</strong><br />
-          admin / password · operador1 / password
-        </div>
+        
       </div>
     </div>
   )
