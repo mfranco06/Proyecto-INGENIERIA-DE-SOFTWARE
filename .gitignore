@@ -1,0 +1,28 @@
+# Dependencias
+node_modules/
+*/node_modules/
+
+# Base de datos (no subir el archivo .db a git)
+backend/db/*.db
+backend/db/*.db-shm
+backend/db/*.db-wal
+
+# Build
+frontend/dist/
+
+# Variables de entorno
+.env
+.env.local
+.env.production
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/settings.json
+.idea/
