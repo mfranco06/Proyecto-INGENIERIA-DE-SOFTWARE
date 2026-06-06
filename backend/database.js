@@ -15,6 +15,8 @@ function getDb() {
     db.exec('PRAGMA journal_mode = WAL');
     db.exec('PRAGMA foreign_keys = ON');
     db.exec(schema);
+    try { db.exec('ALTER TABLE parqueo ADD COLUMN zona TEXT') } catch {}
+    try { db.exec('ALTER TABLE parqueo ADD COLUMN capacidad INTEGER DEFAULT 0') } catch {}
     db.exec(seedData);
     console.log('Base de datos inicializada correctamente');
   }

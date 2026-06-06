@@ -45,6 +45,7 @@ app.get('/api/dashboard', authMiddleware, (req, res) => {
   const totalLineas = db.prepare('SELECT COUNT(*) as total FROM linea').get().total;
   const totalEstaciones = db.prepare('SELECT COUNT(*) as total FROM estacion').get().total;
   const totalBuses = db.prepare('SELECT COUNT(*) as total FROM bus').get().total;
+  const totalParqueos = db.prepare('SELECT COUNT(*) as total FROM parqueo').get().total;
 
   // Alertas: estaciones con >50% ocupación
   const alertasEstaciones = db.prepare(`
@@ -68,7 +69,19 @@ app.get('/api/dashboard', authMiddleware, (req, res) => {
   `).all();
 
   const alertasBuses = [...alertasBusesLow, ...alertasBusesHigh];
-  const totalAlertas = alertasEstaciones.length + alertasBuses.length;
+
+  // Alertas: parqueos con >= 80% de capacidad ocupada
+  const alertasParqueos = db.prepare(`
+    SELECT p.ubicacion, p.zona, p.capacidad, COUNT(b.id_bus) as buses_actuales,
+           ROUND(COUNT(b.id_bus) * 100.0 / p.capacidad, 1) as ocupacion_pct
+    FROM parqueo p
+    LEFT JOIN bus b ON p.id_parqueo = b.id_parqueo
+    WHERE p.capacidad > 0
+    GROUP BY p.id_parqueo
+    HAVING COUNT(b.id_bus) * 1.0 / p.capacidad >= 0.80
+  `).all();
+
+  const totalAlertas = alertasEstaciones.length + alertasBuses.length + alertasParqueos.length;
 
   // Datos para gráfico de estaciones
   const ocupacionEstaciones = db.prepare(`
@@ -88,9 +101,11 @@ app.get('/api/dashboard', authMiddleware, (req, res) => {
     totalLineas,
     totalEstaciones,
     totalBuses,
+    totalParqueos,
     totalAlertas,
     alertasEstaciones,
     alertasBuses,
+    alertasParqueos,
     ocupacionEstaciones,
     busesPorLinea
   });
@@ -329,8 +344,43 @@ app.delete('/api/operadores/:id', authMiddleware, (req, res) => {
 app.get('/api/municipalidades', authMiddleware, (req, res) => {
   res.json(getDb().prepare('SELECT * FROM municipalidad').all());
 });
+
+// ─── PARQUEOS ──────────────────────────────────────────────────────────────────
 app.get('/api/parqueos', authMiddleware, (req, res) => {
-  res.json(getDb().prepare('SELECT * FROM parqueo').all());
+  const db = getDb();
+  const parqueos = db.prepare(`
+    SELECT p.*, COUNT(b.id_bus) as buses_actuales,
+           CASE WHEN p.capacidad > 0 THEN ROUND(COUNT(b.id_bus) * 100.0 / p.capacidad, 1) ELSE 0 END as ocupacion_pct
+    FROM parqueo p
+    LEFT JOIN bus b ON p.id_parqueo = b.id_parqueo
+    GROUP BY p.id_parqueo
+    ORDER BY p.id_parqueo
+  `).all();
+  res.json(parqueos);
+});
+
+app.post('/api/parqueos', authMiddleware, (req, res) => {
+  const { ubicacion, zona, capacidad } = req.body;
+  if (!ubicacion) return res.status(400).json({ error: 'El nombre del parqueo es requerido' });
+  const db = getDb();
+  const result = db.prepare('INSERT INTO parqueo (ubicacion, zona, capacidad) VALUES (?, ?, ?)').run(ubicacion, zona || '', Number(capacidad) || 0);
+  res.status(201).json({ id_parqueo: result.lastInsertRowid, message: 'Parqueo creado exitosamente' });
+});
+
+app.put('/api/parqueos/:id', authMiddleware, (req, res) => {
+  const { ubicacion, zona, capacidad } = req.body;
+  if (!ubicacion) return res.status(400).json({ error: 'El nombre del parqueo es requerido' });
+  const db = getDb();
+  db.prepare('UPDATE parqueo SET ubicacion=?, zona=?, capacidad=? WHERE id_parqueo=?').run(ubicacion, zona || '', Number(capacidad) || 0, req.params.id);
+  res.json({ message: 'Parqueo actualizado exitosamente' });
+});
+
+app.delete('/api/parqueos/:id', authMiddleware, (req, res) => {
+  const db = getDb();
+  const asignados = db.prepare('SELECT COUNT(*) as total FROM bus WHERE id_parqueo = ?').get(req.params.id);
+  if (asignados.total > 0) return res.status(400).json({ error: `No se puede eliminar: tiene ${asignados.total} bus(es) asignado(s)` });
+  db.prepare('DELETE FROM parqueo WHERE id_parqueo = ?').run(req.params.id);
+  res.json({ message: 'Parqueo eliminado exitosamente' });
 });
 app.get('/api/accesos', authMiddleware, (req, res) => {
   const accesos = getDb().prepare(`

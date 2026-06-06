@@ -5,6 +5,7 @@ const navItems = [
   { to: '/lineas', icon: '🗺️', label: 'Líneas', group: 'Operaciones' },
   { to: '/estaciones', icon: '🏢', label: 'Estaciones', group: 'Operaciones' },
   { to: '/buses', icon: '🚌', label: 'Buses', group: 'Operaciones' },
+  { to: '/parqueos', icon: '🅿️', label: 'Parqueos', group: 'Operaciones' },
   { to: '/pilotos', icon: '👨‍✈️', label: 'Pilotos', group: 'Personal' },
   { to: '/guardias', icon: '💂', label: 'Guardias', group: 'Personal' },
   { to: '/operadores', icon: '🎧', label: 'Operadores', group: 'Personal' },
@@ -18,6 +19,7 @@ const pageTitles = {
   '/pilotos': 'Gestión de Pilotos',
   '/guardias': 'Gestión de Guardias',
   '/operadores': 'Gestión de Operadores',
+  '/parqueos': 'Gestión de Parqueos',
 }
 
 export default function Layout() {

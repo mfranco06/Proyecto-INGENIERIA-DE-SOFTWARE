@@ -7,6 +7,7 @@ import Estaciones from './pages/Estaciones'
 import Pilotos from './pages/Pilotos'
 import Guardias from './pages/Guardias'
 import Operadores from './pages/Operadores'
+import Parqueos from './pages/Parqueos'
 import Layout from './components/Layout'
 
 function PrivateRoute({ children }) {
@@ -28,6 +29,7 @@ export default function App() {
           <Route path="pilotos" element={<Pilotos />} />
           <Route path="guardias" element={<Guardias />} />
           <Route path="operadores" element={<Operadores />} />
+          <Route path="parqueos" element={<Parqueos />} />
         </Route>
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>

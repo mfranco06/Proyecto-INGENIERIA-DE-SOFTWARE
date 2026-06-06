@@ -20,7 +20,7 @@ export default function Dashboard() {
 
   const alertasBusesHigh = data.alertasBuses.filter(b => b.ocupacion_pct > 80)
   const alertasBusesLow = data.alertasBuses.filter(b => b.ocupacion_pct <= 80)
-  const totalAlertas = data.alertasEstaciones.length + data.alertasBuses.length
+  const totalAlertas = data.alertasEstaciones.length + data.alertasBuses.length + (data.alertasParqueos?.length || 0)
 
   return (
     <div>
@@ -45,6 +45,13 @@ export default function Dashboard() {
           <div>
             <div className="stat-value">{data.totalBuses}</div>
             <div className="stat-label">Buses en servicio</div>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-icon blue">🅿️</div>
+          <div>
+            <div className="stat-value">{data.totalParqueos}</div>
+            <div className="stat-label">Parqueos disponibles</div>
           </div>
         </div>
         <div className="stat-card">
@@ -126,6 +133,12 @@ export default function Dashboard() {
             <div className="alert-item warning" key={`bl${i}`}>
               <strong>🚌 Bus con baja ocupación:</strong> {b.placa}
               <br /><span>{b.pasajeros_actuales} / {b.capacidad_maxima} pasajeros · {b.ocupacion_pct}% — permanecerá 5 min extra por estación</span>
+            </div>
+          ))}
+          {(data.alertasParqueos || []).map((p, i) => (
+            <div className="alert-item danger" key={`p${i}`}>
+              <strong>🅿️ Parqueo con alta ocupación:</strong> {p.ubicacion}{p.zona ? ` · ${p.zona}` : ''}
+              <br /><span>{p.buses_actuales} / {p.capacidad} buses · {p.ocupacion_pct}% ocupación (límite: 80%)</span>
             </div>
           ))}
           {totalAlertas === 0 && (

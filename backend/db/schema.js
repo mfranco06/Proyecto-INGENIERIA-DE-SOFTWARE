@@ -42,7 +42,9 @@ const schema = `
 
   CREATE TABLE IF NOT EXISTS parqueo (
     id_parqueo INTEGER PRIMARY KEY AUTOINCREMENT,
-    ubicacion TEXT NOT NULL
+    ubicacion TEXT NOT NULL,
+    zona TEXT,
+    capacidad INTEGER DEFAULT 0
   );
 
   CREATE TABLE IF NOT EXISTS piloto (
@@ -108,11 +110,16 @@ const seedData = `
     (2, 'Mixco'),
     (3, 'Villa Nueva');
 
-  INSERT OR IGNORE INTO parqueo (id_parqueo, ubicacion) VALUES
-    (1, 'Parqueo Central - Zona 1'),
-    (2, 'Parqueo Norte - Zona 18'),
-    (3, 'Parqueo Sur - Villa Nueva'),
-    (4, 'Parqueo Mixco');
+  INSERT OR IGNORE INTO parqueo (id_parqueo, ubicacion, zona, capacidad) VALUES
+    (1, 'Parqueo Central', 'Zona 1', 20),
+    (2, 'Parqueo Norte', 'Zona 18', 15),
+    (3, 'Parqueo Sur', 'Villa Nueva', 12),
+    (4, 'Parqueo Mixco', 'Mixco', 10);
+
+  UPDATE parqueo SET zona = 'Zona 1',    capacidad = 20 WHERE id_parqueo = 1 AND (zona IS NULL OR zona = '');
+  UPDATE parqueo SET zona = 'Zona 18',   capacidad = 15 WHERE id_parqueo = 2 AND (zona IS NULL OR zona = '');
+  UPDATE parqueo SET zona = 'Villa Nueva', capacidad = 12 WHERE id_parqueo = 3 AND (zona IS NULL OR zona = '');
+  UPDATE parqueo SET zona = 'Mixco',     capacidad = 10 WHERE id_parqueo = 4 AND (zona IS NULL OR zona = '');
 
   INSERT OR IGNORE INTO piloto (id_piloto, nombre, direccion, telefono, correo, historial_educativo) VALUES
     (1, 'Carlos Ramírez', 'Zona 6, Guatemala', '5555-1111', 'carlos@transmetro.gt', 'Bachiller en Computación'),

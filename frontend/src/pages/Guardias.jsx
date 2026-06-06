@@ -43,7 +43,7 @@ export default function Guardias() {
   return (
     <div>
       <div className="page-header">
-        <div><h2>Guardias</h2><p>Personal de seguridad asignado a accesos de estaciones</p></div>
+        <div><h2>Guardias de Seguridad</h2><p>Personal de seguridad asignado a accesos de estaciones</p></div>
         <button className="btn btn-primary" onClick={openCreate}>+ Nuevo guardia</button>
       </div>
 
